@@ -40,15 +40,21 @@ public class MainActivity extends AppCompatActivity {
     int imgrow , imgcol;
     Button btn_add_image , btn_analyze ;
     ImageView imgv_floures;
+    //this Variable is set to true when opencv lib is loaded
     Boolean opencvIsLoad = false;
+    private Bitmap bmp;
+    final String TAG = "Hello World";
+    //this variable hold pixel values of middle row in gray scale image and is sent to graph activity to draw a line chart
     double [] grayValues;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         btn_add_image = (Button) findViewById(R.id.btn_add_image);
         btn_analyze = (Button) findViewById(R.id.btn_analyze);
         imgv_floures = (ImageView) findViewById(R.id.imgv_floures);
+        //Get picture from gallery
         btn_add_image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -56,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(intent ,request_code_for_taking_img );
             }
         });
+        //Open new Activity for show  analysis result in line chart
         btn_analyze.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -65,14 +72,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    private Bitmap bmp;
-    final String TAG = "Hello World";
+    //load opencv lib into project
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS: {
                     Log.i(TAG, "OpenCV loaded successfully");
+                    //set opencvIsLoad to true
                     opencvIsLoad = true;
                 }
                 break;
@@ -105,29 +112,33 @@ public class MainActivity extends AppCompatActivity {
         {
             Log.d(TAG , "enter to set opencv" + resultCode);
             Uri imageUri = data.getData();
-            String path = getpath(imageUri, this);
+            String path = getPath(imageUri, this);
             grayValues = loadDisplayImage(path);
         }
     }
+    //load image and display it in image view
     private double [] loadDisplayImage(String path)
     {
         ///load image
         Mat originalImg = Imgcodecs.imread(path);
+        //This mat object hold the rgb format of Original Image to display in image view
         Mat rgbImg = new Mat();
+        //this mat object hold the gray scale format of Original Image to calculate the pixel intensities
         Mat grayImg = new Mat();
         Log.d(TAG,"originalImage" + originalImg.height());
+        //Set rgbImg content
         Imgproc.cvtColor(originalImg,rgbImg,Imgproc.COLOR_BGR2RGB);
+        //set grayImg content
         Imgproc.cvtColor(originalImg,grayImg,Imgproc.COLOR_BGR2GRAY);
+        //Get the image dimensions
         imgrow = grayImg.rows();
         imgcol = grayImg.cols();
-        int channel = grayImg.channels();
-        if(channel == 1)
-        {
-            Log.i(TAG,"im gray");
-        }
+        //This variable hold the pixels values in middle row of grayImg
         double[] pixelValues = new double[imgcol];
+
         for(int i = 0 ; i<imgcol;i++)
         {
+            //get pixels values in middle row
             double [] grayValue = grayImg.get((imgrow/2),i);
             pixelValues [i] = grayValue[0];
         }
@@ -138,8 +149,8 @@ public class MainActivity extends AppCompatActivity {
         imgv_floures.setImageBitmap(bitmap);
         return pixelValues;
     }
-
-    private String getpath(Uri uri, Context context) {
+    //Get image path
+    private String getPath(Uri uri, Context context) {
         return RealPathUtil.getRealPath(context, uri);
     }
 }

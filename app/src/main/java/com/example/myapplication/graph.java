@@ -14,6 +14,7 @@ public class graph extends AppCompatActivity {
     double [] grayValues;
     GraphView graph;
     String TAG = "graphActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,20 +52,14 @@ public class graph extends AppCompatActivity {
 
     private double[] smooth(double[] grayValues , int period) {
         double[] movingAverage = new double[grayValues.length];
-        //Log.i(TAG,"grayvalues.lenght" + grayValues.length);
         for(int i = 0; i < grayValues.length - period ; i++)
         {
             movingAverage[i] = 0;
-         /*   if (i == grayValues.length - period)
-            {
-
-            }*/
             for(int j = i; j < i + period ; j++)
             {
                 movingAverage[i] += grayValues[j];
             }
             movingAverage[i] = movingAverage[i] / period ;
-           // Log.i(TAG,"moving average:index" + i + "    "+movingAverage[i] + "grayvalues" + grayValues[i]);
         }
         return movingAverage;
     }
