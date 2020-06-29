@@ -1,0 +1,2 @@
+include ':app', ':openCVLibrary420', 'openCVLibrary344'
+rootProject.name='My Application'

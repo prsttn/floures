@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="addImage">Add Image</string>
+    <string name="analyze">Analyze</string>
+</resources>
