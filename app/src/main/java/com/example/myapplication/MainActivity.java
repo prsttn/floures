@@ -17,6 +17,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -29,6 +30,8 @@ import android.widget.TextView;
 import com.jjoe64.graphview.GraphView;
 import android.annotation.SuppressLint;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.lang.String;
 import java.util.ArrayList;
 
@@ -112,46 +115,87 @@ public class MainActivity extends AppCompatActivity {
         {
             Log.d(TAG , "enter to set opencv" + resultCode);
             Uri imageUri = data.getData();
-            String path = getPath(imageUri, this);
-            grayValues = loadDisplayImage(path);
+           // String path = getPath(imageUri, this);
+            grayValues = loadDisplayImage(this, imageUri);
         }
     }
     //load image and display it in image view
-    private double [] loadDisplayImage(String path)
+    private double [] loadDisplayImage(Context context,Uri uri)
     {
-        ///load image
-        Mat originalImg = Imgcodecs.imread(path);
-        //This mat object hold the rgb format of Original Image to display in image view
-        Mat rgbImg = new Mat();
-        //this mat object hold the gray scale format of Original Image to calculate the pixel intensities
-        Mat grayImg = new Mat();
-        Log.d(TAG,"originalImage" + originalImg.height());
-        //Set rgbImg content
-        Imgproc.cvtColor(originalImg,rgbImg,Imgproc.COLOR_BGR2RGB);
-        //set grayImg content
-        Imgproc.cvtColor(originalImg,grayImg,Imgproc.COLOR_BGR2GRAY);
-        //Get the image dimensions
-        imgrow = grayImg.rows();
-        imgcol = grayImg.cols();
-        //This variable hold the pixels values in middle row of grayImg
-        double[] pixelValues = new double[imgcol];
 
-        for(int i = 0 ; i<imgcol;i++)
-        {
-            //get pixels values in middle row
-            double [] grayValue = grayImg.get((imgrow/2),i);
-            pixelValues [i] = grayValue[0];
+        Bitmap bitmap;
+        try {
+            InputStream is = context.getContentResolver().openInputStream(uri);
+            bitmap = BitmapFactory.decodeStream(is);
+            Mat originalImg = new Mat();
+            Bitmap bmp32 = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+            Utils.bitmapToMat(bmp32, originalImg);
+            Mat grayImg = new Mat();
+            Imgproc.cvtColor(originalImg,grayImg,Imgproc.COLOR_BGR2GRAY);
+            int channels = grayImg.channels();
+            if(channels == 1){
+                Log.i(TAG, "Im gray");
+            }
+            imgrow = grayImg.rows();
+            imgcol = grayImg.cols();
+            //This variable hold the pixels values in middle row of grayImg
+
+            double[] pixelValues = new double[imgcol];
+            for(int i = 0 ; i<imgcol;i++)
+            {
+                //get pixels values in middle row
+                double [] grayValue = grayImg.get((imgrow/2),i);
+                pixelValues [i] = grayValue[0];
+            }
+            Bitmap bitmap2 = Bitmap.createBitmap(originalImg.cols(),originalImg.rows(),Bitmap.Config.RGB_565);
+            Utils.matToBitmap(originalImg , bitmap);
+            imgv_floures.setImageBitmap(bitmap);
+            return pixelValues;
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
         }
-        Log.i(TAG,"finish");
+
+        ///load image
+        //Mat originalImg = Imgcodecs.imread(path);
+        //This mat object hold the rgb format of Original Image to display in image view
+    //    Mat rgbImg = new Mat();
+        //this mat object hold the gray scale format of Original Image to calculate the pixel intensities
+    //    Mat grayImg = new Mat();
+    //    Log.d(TAG,"originalImage" + originalImg.height());
+        //Set rgbImg content
+    //    Imgproc.cvtColor(originalImg,rgbImg,Imgproc.COLOR_BGR2RGB);
+        //set grayImg content
+    //    Imgproc.cvtColor(originalImg,grayImg,Imgproc.COLOR_BGR2GRAY);
+        //Get the image dimensions
+    //    imgrow = grayImg.rows();
+    //    imgcol = grayImg.cols();
+        //This variable hold the pixels values in middle row of grayImg
+    //    double[] pixelValues = new double[imgcol];
+
+    //    for(int i = 0 ; i<imgcol;i++)
+    //    {
+            //get pixels values in middle row
+    //        double [] grayValue = grayImg.get((imgrow/2),i);
+    //        pixelValues [i] = grayValue[0];
+    //    }
+    //    Log.i(TAG,"finish");
         ///display image
-        Bitmap bitmap = Bitmap.createBitmap(rgbImg.cols(),rgbImg.rows(),Bitmap.Config.RGB_565);
-        Utils.matToBitmap(rgbImg , bitmap);
-        imgv_floures.setImageBitmap(bitmap);
-        return pixelValues;
+    //    Bitmap bitmap = Bitmap.createBitmap(rgbImg.cols(),rgbImg.rows(),Bitmap.Config.RGB_565);
+    //    Utils.matToBitmap(rgbImg , bitmap);
+    //    imgv_floures.setImageBitmap(bitmap);
+        double[] pixelValues = new double[10];
+        return  pixelValues;
     }
     //Get image path
     private String getPath(Uri uri, Context context) {
-        return RealPathUtil.getRealPath(context, uri);
+        try {
+            InputStream is = context.getContentResolver().openInputStream(uri);
+            Bitmap bitmap = BitmapFactory.decodeStream(is);
+            return  "success";
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
+        return  "success";
     }
 }
 

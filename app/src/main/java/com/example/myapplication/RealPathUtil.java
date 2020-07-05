@@ -13,6 +13,8 @@ import android.util.Log;
 
 import androidx.loader.content.CursorLoader;
 
+import java.io.File;
+
 public class RealPathUtil {
 
 
@@ -30,9 +32,13 @@ public class RealPathUtil {
             realPath = RealPathUtil.getRealPathFromURI_API11to18(context, fileUri);
         }
         // SDK > 19 (Android 4.4) and up
-        else {
+        else if(Build.VERSION.SDK_INT < 23) {
             Log.i(TAG, "in sdk > 19");
             realPath = RealPathUtil.getRealPathFromURI_API19(context, fileUri);
+        }
+        else {
+            Log.i(TAG, "in sdk > 23");
+            realPath = RealPathUtil.getImageFilePath(context, fileUri);
         }
         return realPath;
     }
@@ -148,6 +154,17 @@ public class RealPathUtil {
         return null;
     }
 
+
+    /***************************************/
+    @SuppressLint("NewApi")
+    public static String getImageFilePath(Context context,Uri uri) {
+        String TAG="API 23 above";
+        Log.i(TAG,uri.getPath());
+        File file = new File(uri.getPath());//create path from uri
+        final String[] split = file.getPath().split(":");//split the path.
+        String filePath = split[0];//assign it to a string(your choice).
+        return filePath;
+    }
     /**
      * Get the value of the data column for this Uri. This is useful for
      * MediaStore Uris, and other file-based ContentProviders.
