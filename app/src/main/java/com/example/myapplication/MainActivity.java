@@ -2,40 +2,28 @@ package com.example.myapplication;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.loader.content.CursorLoader;
 
-import org.opencv.*;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
-
-import com.jjoe64.graphview.GraphView;
-import android.annotation.SuppressLint;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.String;
-import java.util.ArrayList;
-
-//import java.net.URI;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -128,27 +116,34 @@ public class MainActivity extends AppCompatActivity {
             InputStream is = context.getContentResolver().openInputStream(uri);
             bitmap = BitmapFactory.decodeStream(is);
             Mat originalImg = new Mat();
-            Bitmap bmp32 = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-            Utils.bitmapToMat(bmp32, originalImg);
+            bitmap = bitmap.copy(Bitmap.Config.RGB_565, true);
+            Utils.bitmapToMat(bitmap, originalImg);
             Mat grayImg = new Mat();
             Imgproc.cvtColor(originalImg,grayImg,Imgproc.COLOR_BGR2GRAY);
             int channels = grayImg.channels();
-            if(channels == 1){
+            if(channels == 1) {
                 Log.i(TAG, "Im gray");
             }
             imgrow = grayImg.rows();
             imgcol = grayImg.cols();
             //This variable hold the pixels values in middle row of grayImg
+            Log.i(TAG, "rows" + imgrow);
+            Log.i(TAG , "cols" + imgcol);
+            Log.i(TAG,"total" + grayImg.total());
 
             double[] pixelValues = new double[imgcol];
+           /* byte[] imgData = new byte[(int) (grayImg.total() * grayImg.channels())];
+            grayImg.get(0, 0, imgData);*/
             for(int i = 0 ; i<imgcol;i++)
             {
                 //get pixels values in middle row
                 double [] grayValue = grayImg.get((imgrow/2),i);
                 pixelValues [i] = grayValue[0];
+                /*double  grayValue = imgData[(imgrow/2) * grayImg.cols() + i];
+                pixelValues [i] = grayValue;*/
             }
             Bitmap bitmap2 = Bitmap.createBitmap(originalImg.cols(),originalImg.rows(),Bitmap.Config.RGB_565);
-            Utils.matToBitmap(originalImg , bitmap);
+            Utils.matToBitmap(grayImg , bitmap);
             imgv_floures.setImageBitmap(bitmap);
             return pixelValues;
         } catch (FileNotFoundException e){
